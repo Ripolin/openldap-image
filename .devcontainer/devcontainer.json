@@ -1,0 +1,29 @@
+{
+    "name": "OpenLDAP",
+    "image": "debian:13-slim",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "moby": false
+        },
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "upgradePackages": true
+        },
+        "ghcr.io/lukewiwa/features/shellcheck:0": {}
+    },
+    "runArgs": [
+        "--privileged",
+        "--init"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "ms-azuretools.vscode-containers",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    }
+}

@@ -1,22 +1,75 @@
+# SPDX-License-Identifier: APACHE-2.0
+
 FROM mcr.microsoft.com/vscode/devcontainers/cpp:dev-debian13 AS build
 
-ADD https://github.com/openldap/openldap.git#OPENLDAP_REL_ENG_2_6_13 /tmp/openldap
+ADD https://git.openldap.org/openldap/openldap.git#OPENLDAP_REL_ENG_2_6_13 /tmp/openldap
 
+COPY customize.sh /tmp/openldap/customize.sh
+
+# Build and install OpenLDAP from source
 WORKDIR /tmp/openldap
+
+ENV PREFIX="/opt/bitnami/openldap" \
+    SUBDIR="/openldap"
 
 RUN apt-get update && \
     apt-get install -y \
-        libsasl2-dev && \
+        libargon2-dev \
+        libsasl2-dev \
+        libtool && \
     ./configure \
-        --enable-overlays \
+        --enable-argon2 \
+        --enable-overlays=mod \
+        --enable-modules \
         --enable-spasswd \
-        --prefix=/opt/bitnami/openldap \
+        --prefix=${PREFIX} \
+        --with-argon2=libargon2 \
         --with-cyrus-sasl \
-        --with-subdir="" && \
+        --with-subdir=${SUBDIR} && \ 
     make depend && \
     make && \
-    make install && \
-    rm -rf /opt/bitnami/openldap/share/man
+    make install
+
+RUN ./customize.sh ${PREFIX} ${SUBDIR}
+
+# Build and install additional OpenLDAP autogroup module
+WORKDIR /tmp/openldap/contrib/slapd-modules/autogroup
+
+RUN make prefix=${PREFIX} && \
+    make install prefix=${PREFIX}
+
+# Build and install additional OpenLDAP lastbind module
+WORKDIR /tmp/openldap/contrib/slapd-modules/lastbind
+
+RUN make prefix=${PREFIX} && \
+    make install prefix=${PREFIX}
+
+# Build and install additional OpenLDAP pbkdf2 modules
+WORKDIR /tmp/openldap/contrib/slapd-modules/passwd/pbkdf2
+
+RUN make prefix=${PREFIX} && \
+    make install prefix=${PREFIX}
+
+# Build and install additional OpenLDAP sha2 modules
+WORKDIR /tmp/openldap/contrib/slapd-modules/passwd/sha2
+
+RUN make prefix=${PREFIX} && \
+    make install prefix=${PREFIX}
+
+# Build and install additional OpenLDAP smbk5pwd module
+WORKDIR /tmp/openldap/contrib/slapd-modules/smbk5pwd
+
+RUN apt-get install -y heimdal-multidev && \
+    make \
+        prefix=${PREFIX} \
+        HEIMDAL_INC="$(/usr/bin/krb5-config.heimdal --cflags)" \
+        HEIMDAL_LIB="$(/usr/bin/krb5-config.heimdal --libs)" && \
+    make install prefix=${PREFIX}
+
+# Clean up unnecessary files to reduce image size
+RUN rm -rf ${PREFIX}/share/man && \
+    find ${PREFIX} -name "*.la" -delete && \
+    find ${PREFIX} -name "*.a" -delete
 
 FROM docker.io/debian:13-slim
 
@@ -41,7 +94,7 @@ RUN /opt/bitnami/scripts/openldap/postunpack.sh
 ENV APP_VERSION="2.6.13" \
     BITNAMI_APP_NAME="openldap" \
     IMAGE_REVISION="0" \
-    PATH="/opt/bitnami/openldap/libexec:/opt/bitnami/openldap/bin:/opt/bitnami/openldap/sbin:$PATH"
+    PATH="/opt/bitnami/openldap/bin:/opt/bitnami/openldap/sbin:$PATH"
 
 EXPOSE 1389 1636
 
