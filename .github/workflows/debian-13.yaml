@@ -1,4 +1,4 @@
-name: debian-13
+name: Build and push OpenLDAP Docker image for Debian 13
 
 on:
   push:
