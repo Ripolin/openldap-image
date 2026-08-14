@@ -18,6 +18,7 @@ jobs:
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: Ripolin/openldap
+      OPENLDAP_VERSION: 2.6.14
 
     steps:
       - name: Checkout repository
@@ -30,6 +31,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute build variables
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          echo "OPENLDAP_GIT_TAG=OPENLDAP_REL_ENG_${OPENLDAP_VERSION//./_}" >> "$GITHUB_ENV"
+          echo "OPENLDAP_MINOR=${OPENLDAP_VERSION%.*}" >> "$GITHUB_ENV"
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
@@ -37,9 +44,10 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=2.6.13-debian-13
-            type=raw,value=2.6.13
-            type=raw,value=2.6
+            type=sha,prefix=${{ env.OPENLDAP_VERSION }}-debian-13-,format=short
+            type=raw,value=${{ env.OPENLDAP_VERSION }}-debian-13
+            type=raw,value=${{ env.OPENLDAP_VERSION }}
+            type=raw,value=${{ env.OPENLDAP_MINOR }}
             type=raw,value=latest
 
       - name: Set up QEMU
@@ -54,9 +62,13 @@ jobs:
         with:
           context: "{{defaultContext}}:2.6/debian-13"
           push: true
-          tags: ${{ steps.meta.outputs.tags }} 
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            OPENLDAP_VERSION=${{ env.OPENLDAP_VERSION }}
+            OPENLDAP_GIT_TAG=${{ env.OPENLDAP_GIT_TAG }}
+            IMAGE_REVISION=${{ env.SHORT_SHA }}
 
       - name: Generate artifact attestation
         uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0

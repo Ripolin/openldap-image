@@ -32,7 +32,9 @@ volumes:
 
 | Tag                                           | OpenLDAP version | Base OS        |
 |-----------------------------------------------|------------------|----------------|
-| `latest`, `2.6`, `2.6.13`, `2.6.13-debian-13` | 2.6.13           | Debian 13 slim |
+| `latest`, `2.6`, `2.6.14`, `2.6.14-debian-13` | 2.6.14           | Debian 13 slim |
+
+Every build also publishes an immutable tag `2.6.14-debian-13-<short-sha>`, where `<short-sha>` is the 7-character Git commit the image was built from. The tags above are mutable and always point to the most recent build; use the commit-suffixed tag to pin a specific one. The same value is exposed inside the image as `IMAGE_REVISION`.
 
 Images are published to [ghcr.io/ripolin/openldap](https://github.com/Ripolin/openldap/pkgs/container/openldap) for `linux/amd64` and `linux/arm64`.
 
@@ -60,6 +62,17 @@ See the [Bitnami OpenLDAP documentation](https://github.com/bitnami/containers/b
 cd 2.6/debian-13
 docker build -t openldap:local .
 ```
+
+This uses the OpenLDAP version set as the `ARG` defaults in the Dockerfile. To build a different release, pass both arguments — the Git tag mirrors the version with underscores:
+
+```sh
+docker build \
+  --build-arg OPENLDAP_VERSION=2.6.14 \
+  --build-arg OPENLDAP_GIT_TAG=OPENLDAP_REL_ENG_2_6_14 \
+  -t openldap:local .
+```
+
+Published images are built by the CI workflow, which sets `OPENLDAP_VERSION` itself and is the source of truth for the released version.
 
 ## License
 

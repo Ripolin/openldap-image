@@ -1,8 +1,15 @@
 # SPDX-License-Identifier: APACHE-2.0
 
+# Defaults for local builds only. The CI workflow overrides both values and is
+# the source of truth for published images.
+ARG OPENLDAP_VERSION=2.6.13
+ARG OPENLDAP_GIT_TAG=OPENLDAP_REL_ENG_2_6_13
+
 FROM mcr.microsoft.com/vscode/devcontainers/cpp:dev-debian13 AS build
 
-ADD https://github.com/openldap/openldap.git#OPENLDAP_REL_ENG_2_6_13 /tmp/openldap
+ARG OPENLDAP_GIT_TAG
+
+ADD https://github.com/openldap/openldap.git#${OPENLDAP_GIT_TAG} /tmp/openldap
 
 COPY customize.sh /tmp/openldap/customize.sh
 
@@ -91,9 +98,11 @@ RUN find / -perm /6000 -type f -exec chmod a-s {} \; || true
 
 COPY rootfs /
 RUN /opt/bitnami/scripts/openldap/postunpack.sh
-ENV APP_VERSION="2.6.13" \
+ARG OPENLDAP_VERSION
+ARG IMAGE_REVISION=0
+ENV APP_VERSION="${OPENLDAP_VERSION}" \
     BITNAMI_APP_NAME="openldap" \
-    IMAGE_REVISION="0" \
+    IMAGE_REVISION="${IMAGE_REVISION}" \
     PATH="/opt/bitnami/openldap/bin:/opt/bitnami/openldap/sbin:$PATH"
 
 EXPOSE 1389 1636
