@@ -2,8 +2,8 @@
 
 # Defaults for local builds only. The CI workflow overrides both values and is
 # the source of truth for published images.
-ARG OPENLDAP_VERSION=2.6.14
-ARG OPENLDAP_GIT_TAG=OPENLDAP_REL_ENG_2_6_14
+ARG OPENLDAP_VERSION=2.7.0
+ARG OPENLDAP_GIT_TAG=OPENLDAP_REL_ENG_2_7_0
 
 FROM mcr.microsoft.com/vscode/devcontainers/cpp:dev-debian13 AS build
 

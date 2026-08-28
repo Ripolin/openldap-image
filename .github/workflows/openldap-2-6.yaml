@@ -1,4 +1,4 @@
-name: Build and push OpenLDAP Docker image for Debian 13
+name: Build and push OpenLDAP 2.6 Docker image for Debian 13
 
 on:
   push:
@@ -48,7 +48,6 @@ jobs:
             type=raw,value=${{ env.OPENLDAP_VERSION }}-debian-13
             type=raw,value=${{ env.OPENLDAP_VERSION }}
             type=raw,value=${{ env.OPENLDAP_MINOR }}
-            type=raw,value=latest
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0

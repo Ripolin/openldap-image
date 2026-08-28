@@ -9,7 +9,9 @@
         "ghcr.io/devcontainers/features/common-utils:2": {
             "upgradePackages": true
         },
-        "ghcr.io/lukewiwa/features/shellcheck:0": {}
+        "ghcr.io/lukewiwa/features/shellcheck:0": {},
+        "ghcr.io/devcontainers/features/node:1": {},
+        "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
     },
     "runArgs": [
         "--privileged",
@@ -21,6 +23,7 @@
                 "terminal.integrated.shell.linux": "/bin/bash"
             },
             "extensions": [
+                "anthropic.claude-code",
                 "ms-azuretools.vscode-containers",
                 "ms-azuretools.vscode-docker"
             ]

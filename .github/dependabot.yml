@@ -9,3 +9,8 @@ updates:
     directory: /2.6/debian-13
     schedule:
       interval: weekly
+
+  - package-ecosystem: docker
+    directory: /2.7/debian-13
+    schedule:
+      interval: weekly
